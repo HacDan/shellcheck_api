@@ -15,6 +15,10 @@ type SCCodeInfo struct {
 	Link        string `json:"link"`
 }
 
+type Err struct {
+	Error string `json:"error"`
+}
+
 func main() {
 	http.HandleFunc("/api/v1/codes", handleAllCodes)
 	http.HandleFunc("/api/v1/codes/{code}", handleCode)
@@ -24,6 +28,11 @@ func main() {
 func handleCode(w http.ResponseWriter, r *http.Request) {
 	codeString := r.PathValue("code")
 	allCodes := parseSCFile() //TODO: Move to interface/struct
+	if _, ok := allCodes[codeString]; !ok {
+		respError(w, "Not found")
+		return
+	}
+
 	code := SCCodeInfo{
 		Code:        codeString,
 		Description: allCodes[codeString],
@@ -39,6 +48,20 @@ func handleCode(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonCode)
 
+}
+
+func respError(w http.ResponseWriter, errorString string) {
+	mErr := Err{
+		Error: errorString,
+	}
+	errorJson, err := json.Marshal(mErr)
+	if err != nil {
+		panic(err)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusNotFound)
+	w.Write(errorJson)
 }
 
 func handleAllCodes(w http.ResponseWriter, r *http.Request) {
