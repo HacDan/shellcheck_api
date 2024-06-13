@@ -16,6 +16,10 @@ type SCCodeInfo struct {
 	Link        string `json:"link"`
 }
 
+type Parsecode struct {
+	Codes string `json:"codes"`
+}
+
 type Err struct {
 	Error string `json:"error"`
 }
@@ -23,6 +27,7 @@ type Err struct {
 func main() {
 	http.HandleFunc("/api/v1/codes", handleAllCodes)
 	http.HandleFunc("/api/v1/codes/{code}", handleCode)
+	http.HandleFunc("/api/v1/codes/parse", handleParse)
 	log.Fatal(http.ListenAndServe(":8888", nil))
 }
 
@@ -91,4 +96,18 @@ func handleAllCodes(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonCodes)
 
+}
+
+func handleParse(w http.ResponseWriter, r *http.Request) {
+	var parseCode Parsecode
+
+	err := json.NewDecoder(r.Body).Decode(&parseCode)
+	if err != nil {
+		respError(w, "Error parsing json")
+		return
+	}
+
+	scCodes := findAllCodes(parseCode.Codes)
+
+	var scCodeInfos []SCCodeInfo
 }
