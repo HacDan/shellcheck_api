@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sort"
 )
 
 const SC_BASE_URL = "https://github.com/koalaman/shellcheck/wiki/%s"
@@ -76,6 +77,10 @@ func handleAllCodes(w http.ResponseWriter, r *http.Request) {
 		}
 		codes = append(codes, sccodeinfo)
 	}
+
+	sort.Slice(codes, func(i, j int) bool {
+		return codes[i].Code < codes[j].Code
+	})
 
 	jsonCodes, err := json.Marshal(codes)
 	if err != nil {
