@@ -8,7 +8,21 @@ import (
 	"sort"
 )
 
-const SC_BASE_URL = "https://github.com/koalaman/shellcheck/wiki/%s"
+const (
+	SC_BASE_URL             = "https://github.com/koalaman/shellcheck/wiki/%s"
+	ContentTypeJSON  = "application/json"
+	DefaultListenPort= ":8888"
+	ErrorParsingJSON = "Error parsing JSON"
+	ErrorNotFound    = "Not found"
+)
+
+type Err struct {
+	Error string `json:"error"`
+}
+
+type Parsecode struct {
+	Codes string `json:"codes"`
+}
 
 type SCCodeInfo struct {
 	Code        string `json:"code"`
@@ -16,58 +30,29 @@ type SCCodeInfo struct {
 	Link        string `json:"link"`
 }
 
-type Parsecode struct {
-	Codes string `json:"codes"`
-}
-
-type Err struct {
-	Error string `json:"error"`
-}
 
 func main() {
 	http.HandleFunc("/api/v1/codes", handleAllCodes)
 	http.HandleFunc("/api/v1/codes/{code}", handleCode)
 	http.HandleFunc("/api/v1/codes/parse", handleParse)
-	log.Fatal(http.ListenAndServe(":8888", nil))
+	log.Fatal(http.ListenAndServe(":8888", nil)) //TODO: Change to environment variable/.env with a default
 }
 
 func handleCode(w http.ResponseWriter, r *http.Request) {
 	codeString := r.PathValue("code")
 	allCodes := parseSCFile() //TODO: Move to interface/struct
-	if _, ok := allCodes[codeString]; !ok {
-		respError(w, "Not found")
+	description, ok := allCodes[codeString]
+	if !ok {
+		respError(w, "Code not found", http.StatusNotFound)
 		return
 	}
 
 	code := SCCodeInfo{
 		Code:        codeString,
-		Description: allCodes[codeString],
+		Description: description,
 		Link:        fmt.Sprintf(SC_BASE_URL, codeString),
 	}
-
-	jsonCode, err := json.Marshal(code)
-	if err != nil {
-		panic(err)
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(jsonCode)
-
-}
-
-func respError(w http.ResponseWriter, errorString string) {
-	mErr := Err{
-		Error: errorString,
-	}
-	errorJson, err := json.Marshal(mErr)
-	if err != nil {
-		panic(err)
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusNotFound)
-	w.Write(errorJson)
+	respondJSON(w, code, http.StatusOK)
 }
 
 func handleAllCodes(w http.ResponseWriter, r *http.Request) {
@@ -87,15 +72,7 @@ func handleAllCodes(w http.ResponseWriter, r *http.Request) {
 		return codes[i].Code < codes[j].Code
 	})
 
-	jsonCodes, err := json.Marshal(codes)
-	if err != nil {
-		panic(err)
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(jsonCodes)
-
+	respondJSON(w, codes, http.StatusOK)
 }
 
 func handleParse(w http.ResponseWriter, r *http.Request) {
@@ -104,7 +81,7 @@ func handleParse(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&parseCode)
 	if err != nil {
-		respError(w, "Error parsing json")
+		respError(w, "Error parsing json", http.StatusUnprocessableEntity)
 		return
 	}
 
@@ -126,12 +103,31 @@ func handleParse(w http.ResponseWriter, r *http.Request) {
 		return scCodeInfos[i].Code < scCodeInfos[j].Code
 	})
 
-	jsonCodes, err := json.Marshal(scCodeInfos)
+	respondJSON(w, scCodeInfos, http.StatusOK)
+}
+
+func respondJSON(w http.ResponseWriter, data interface{}, status int) {
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		respError(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	w.Write(jsonData)
+}
+
+func respError(w http.ResponseWriter, errorString string, status int) {
+	mErr := Err{
+		Error: errorString,
+	}
+	errorJson, err := json.Marshal(mErr)
 	if err != nil {
 		panic(err)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(jsonCodes)
+	w.WriteHeader(status)
+	w.Write(errorJson)
 }
