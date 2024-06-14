@@ -100,6 +100,7 @@ func handleAllCodes(w http.ResponseWriter, r *http.Request) {
 
 func handleParse(w http.ResponseWriter, r *http.Request) {
 	var parseCode Parsecode
+	var scCodeInfos []SCCodeInfo
 
 	err := json.NewDecoder(r.Body).Decode(&parseCode)
 	if err != nil {
@@ -108,6 +109,29 @@ func handleParse(w http.ResponseWriter, r *http.Request) {
 	}
 
 	scCodes := findAllCodes(parseCode.Codes)
+	allScCodes := parseSCFile()
 
-	var scCodeInfos []SCCodeInfo
+	for _, scCode := range scCodes {
+		if _, ok := allScCodes[scCode]; ok {
+			tempCodeInfo := SCCodeInfo{
+				Code:        scCode,
+				Description: allScCodes[scCode],
+				Link:        fmt.Sprintf(SC_BASE_URL, scCode),
+			}
+			scCodeInfos = append(scCodeInfos, tempCodeInfo)
+		}
+	}
+
+	sort.Slice(scCodeInfos, func(i, j int) bool {
+		return scCodeInfos[i].Code < scCodeInfos[j].Code
+	})
+
+	jsonCodes, err := json.Marshal(scCodeInfos)
+	if err != nil {
+		panic(err)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonCodes)
 }
