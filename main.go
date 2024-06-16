@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"sort"
+
+	"github.com/joho/godotenv"
 )
 
 const (
 	SC_BASE_URL       = "https://github.com/koalaman/shellcheck/wiki/%s"
-	DefaultListenPort = ":8888"
+	DefaultListenPort = ":8080"
 )
 
 type Err struct {
@@ -28,10 +31,15 @@ type SCCodeInfo struct {
 }
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	http.HandleFunc("/api/v1/codes", handleAllCodes)
 	http.HandleFunc("/api/v1/codes/{code}", handleCode)
 	http.HandleFunc("/api/v1/codes/parse", handleParse)
-	log.Fatal(http.ListenAndServe(DefaultListenPort, nil)) //TODO: Change to environment variable/.env with a default
+	log.Fatal(http.ListenAndServe(getEnv("ADDRESS", DefaultListenPort), nil))
 }
 
 func handleCode(w http.ResponseWriter, r *http.Request) {
@@ -126,4 +134,11 @@ func respError(w http.ResponseWriter, errorString string, status int) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	w.Write(errorJson)
+}
+
+func getEnv(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return fallback
 }
