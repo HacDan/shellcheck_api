@@ -9,11 +9,8 @@ import (
 )
 
 const (
-	SC_BASE_URL             = "https://github.com/koalaman/shellcheck/wiki/%s"
-	ContentTypeJSON  = "application/json"
-	DefaultListenPort= ":8888"
-	ErrorParsingJSON = "Error parsing JSON"
-	ErrorNotFound    = "Not found"
+	SC_BASE_URL       = "https://github.com/koalaman/shellcheck/wiki/%s"
+	DefaultListenPort = ":8888"
 )
 
 type Err struct {
@@ -30,12 +27,11 @@ type SCCodeInfo struct {
 	Link        string `json:"link"`
 }
 
-
 func main() {
 	http.HandleFunc("/api/v1/codes", handleAllCodes)
 	http.HandleFunc("/api/v1/codes/{code}", handleCode)
 	http.HandleFunc("/api/v1/codes/parse", handleParse)
-	log.Fatal(http.ListenAndServe(":8888", nil)) //TODO: Change to environment variable/.env with a default
+	log.Fatal(http.ListenAndServe(DefaultListenPort, nil)) //TODO: Change to environment variable/.env with a default
 }
 
 func handleCode(w http.ResponseWriter, r *http.Request) {
@@ -43,7 +39,7 @@ func handleCode(w http.ResponseWriter, r *http.Request) {
 	allCodes := parseSCFile() //TODO: Move to interface/struct
 	description, ok := allCodes[codeString]
 	if !ok {
-		respError(w, "Code not found", http.StatusNotFound)
+		respError(w, "Not found", http.StatusNotFound)
 		return
 	}
 
