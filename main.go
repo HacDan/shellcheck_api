@@ -24,7 +24,7 @@ func main() {
 	http.HandleFunc("/api/v1/codes/{code}", api.HandleCode)
 	http.HandleFunc("/api/v1/codes/parse", api.HandleParse)
 
-	slog.Info("Starting Server", "localhost", utils.GetEnv("ADDRESS", DefaultListenPort))
+	slog.Info("Starting Server on localhost" + utils.GetEnv("ADDRESS", DefaultListenPort))
 	slog.Error("Server failed: ", http.ListenAndServe(utils.GetEnv("ADDRESS", DefaultListenPort), nil))
 	os.Exit(1)
 }
