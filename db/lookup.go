@@ -1,4 +1,4 @@
-package main
+package db
 
 import (
 	"bufio"
@@ -7,12 +7,12 @@ import (
 	"strings"
 )
 
-func findAllCodes(s string) []string {
+func FindAllCodes(s string) []string {
 	re := regexp.MustCompile("SC\\d\\d\\d\\d")
 	return re.FindAllString(s, -1)
 }
 
-func parseSCFile() map[string]string {
+func ParseSCFile() map[string]string {
 	f, err := os.Open("sc.md")
 	if err != nil {
 		panic(err)

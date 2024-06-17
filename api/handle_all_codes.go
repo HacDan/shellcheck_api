@@ -1,18 +1,22 @@
-package main
+package api
 
 import (
 	"fmt"
 	"net/http"
 	"sort"
+
+	"github.com/hacdan/shellcheck_api/db"
+	"github.com/hacdan/shellcheck_api/types"
 )
 
+const SC_BASE_URL = "https://github.com/koalaman/shellcheck/wiki/%s"
 
-func handleAllCodes(w http.ResponseWriter, r *http.Request) {
-	var codes []SCCodeInfo
-	allCodes := parseSCFile()
+func HandleAllCodes(w http.ResponseWriter, r *http.Request) {
+	var codes []types.SCCodeInfo
+	allCodes := db.ParseSCFile()
 
 	for code, description := range allCodes {
-		sccodeinfo := SCCodeInfo{
+		sccodeinfo := types.SCCodeInfo{
 			Code:        code,
 			Description: description,
 			Link:        fmt.Sprintf(SC_BASE_URL, code),

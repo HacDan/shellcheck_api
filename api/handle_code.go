@@ -1,20 +1,23 @@
-package main
+package api
 
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/hacdan/shellcheck_api/db"
+	"github.com/hacdan/shellcheck_api/types"
 )
 
-func handleCode(w http.ResponseWriter, r *http.Request) {
+func HandleCode(w http.ResponseWriter, r *http.Request) {
 	codeString := r.PathValue("code")
-	allCodes := parseSCFile() //TODO: Move to interface/struct
+	allCodes := db.ParseSCFile() //TODO: Move to interface/struct
 	description, ok := allCodes[codeString]
 	if !ok {
 		respError(w, "Not found", http.StatusNotFound)
 		return
 	}
 
-	code := SCCodeInfo{
+	code := types.SCCodeInfo{
 		Code:        codeString,
 		Description: description,
 		Link:        fmt.Sprintf(SC_BASE_URL, codeString),

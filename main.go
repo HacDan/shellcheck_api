@@ -5,11 +5,12 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/hacdan/shellcheck_api/api"
+	"github.com/hacdan/shellcheck_api/utils"
 	"github.com/joho/godotenv"
 )
 
 const (
-	SC_BASE_URL       = "https://github.com/koalaman/shellcheck/wiki/%s"
 	DefaultListenPort = ":8080"
 )
 
@@ -19,10 +20,11 @@ func main() {
 		slog.Error("Error loading environment variables", err)
 	}
 
-	http.HandleFunc("/api/v1/codes", handleAllCodes)
-	http.HandleFunc("/api/v1/codes/{code}", handleCode)
-	http.HandleFunc("/api/v1/codes/parse", handleParse)
+	http.HandleFunc("/api/v1/codes", api.HandleAllCodes)
+	http.HandleFunc("/api/v1/codes/{code}", api.HandleCode)
+	http.HandleFunc("/api/v1/codes/parse", api.HandleParse)
 
-	slog.Error("Server failed: ", http.ListenAndServe(getEnv("ADDRESS", DefaultListenPort), nil))
+	slog.Info("Starting Server", "localhost", utils.GetEnv("ADDRESS", DefaultListenPort))
+	slog.Error("Server failed: ", http.ListenAndServe(utils.GetEnv("ADDRESS", DefaultListenPort), nil))
 	os.Exit(1)
 }
