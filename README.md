@@ -15,10 +15,16 @@ REST Api for getting shellcheck information
 go install github.com/hacdan/shellcheck_api
 ```
 
+Setup `env` file for listening port
+
+```env
+ADDRESS=":8080"
+```
+
 ### Executing program
 
 ```sh
-
+shellcheck_api
 ```
 
 ## Help
