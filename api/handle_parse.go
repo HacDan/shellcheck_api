@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"sort"
 
-	"github.com/hacdan/shellcheck_api/db"
+	"github.com/hacdan/shellcheck_api/storage"
 	"github.com/hacdan/shellcheck_api/types"
 )
 
@@ -20,8 +20,8 @@ func HandleParse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	scCodes := db.FindAllCodes(parseCode.Codes)
-	allScCodes := db.ParseSCFile()
+	scCodes := storage.FindAllCodes(parseCode.Codes)
+	allScCodes := storage.ParseSCFile()
 
 	for _, scCode := range scCodes {
 		if _, ok := allScCodes[scCode]; ok {
