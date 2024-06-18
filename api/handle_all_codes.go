@@ -11,7 +11,7 @@ import (
 
 const SC_BASE_URL = "https://github.com/koalaman/shellcheck/wiki/%s"
 
-func HandleAllCodes(w http.ResponseWriter, r *http.Request) {
+func (s *Server) HandleAllCodes(w http.ResponseWriter, r *http.Request) {
 	var codes []types.SCCodeInfo
 	allCodes := storage.ParseSCFile()
 

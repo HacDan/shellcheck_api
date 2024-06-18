@@ -8,7 +8,7 @@ import (
 	"github.com/hacdan/shellcheck_api/types"
 )
 
-func HandleCode(w http.ResponseWriter, r *http.Request) {
+func (s *Server) HandleCode(w http.ResponseWriter, r *http.Request) {
 	codeString := r.PathValue("code")
 	allCodes := storage.ParseSCFile() //TODO: Move to interface/struct
 	description, ok := allCodes[codeString]

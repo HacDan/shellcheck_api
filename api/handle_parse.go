@@ -10,7 +10,7 @@ import (
 	"github.com/hacdan/shellcheck_api/types"
 )
 
-func HandleParse(w http.ResponseWriter, r *http.Request) {
+func (s *Server) HandleParse(w http.ResponseWriter, r *http.Request) {
 	var parseCode types.Parsecode
 	var scCodeInfos []types.SCCodeInfo
 
